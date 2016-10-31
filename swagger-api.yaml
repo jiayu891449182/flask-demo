@@ -1,0 +1,189 @@
+swagger: '2.0'
+info:
+  version: 0.1.0.0
+  title: 文本分析 REST API
+basePath: /textanalysis
+host: review.zintow.com
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /:
+    post:
+      summary: Parse the text and get the word count
+      parameters:
+        - name: data
+          in: body
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/text"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/meta"
+
+  /{txtId}/:
+    get:
+      parameters:
+        - in: path
+          name: txtId
+          description: ID (md5 code) of pet that needs to be fetched
+          required: true
+          type: string
+
+        - name: categories
+          in: query
+          description: v,n,a,d,g,i (分别代表动词，名词，形容词，副词，学术词，成语)
+          type: array
+          items:
+            type: string
+
+        - name: filter
+          in: query
+          description: 'Pythong Regex'
+          type: string
+
+        - name:  limit
+          in: query
+          description: The number of words in returned json.
+          type: integer
+          default: 30
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/analysis"
+
+  /{txtId}/count/:
+    get:
+      parameters:
+        - in: path
+          name: txtId
+          description: ID (md5 code) of pet that needs to be fetched
+          required: true
+          type: string
+
+        - name: categories
+          in: query
+          description: v,n,a,d,g,i (分别代表动词，名词，形容词，副词，学术词，成语)
+          type: array
+          items:
+            type: string
+
+        - name: filter
+          in: query
+          description: 'Pythong Regex'
+          type: string
+
+        - name:  limit
+          in: query
+          description: The number of words in returned json.
+          type: integer
+          default: 30
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/counts"
+
+  /{txtId}/sentiment:
+    get:
+      summary: Parse the text and get the sentiment
+      parameters:
+        - in: path
+          name: txtId
+          description: ID (md5 code) of pet that needs to be fetched
+          required: true
+          type: string
+        - name: filter
+          in: query
+          description: 'Pythong Regex'
+          type: string
+        - name: model
+          in: query
+          description: Model of sentiment analysis we choosed
+          type: string
+          default: 'common'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/sentiments"
+
+definitions:
+
+  text:
+    type: object
+    properties:
+      id:
+        type: string
+      text:
+        type: string
+
+  meta:
+    type: object
+    properties:
+      txtId:
+        type: string
+
+  analysis:
+    type: object
+    properties:
+      meta:
+        $ref:  "#/definitions/meta"
+      isReady:
+        type: boolean
+      counts:
+        type: array
+        items:
+          $ref:  "#/definitions/count"
+      sentiments:
+        type: array
+        items:
+          $ref:  "#/definitions/sentiment"
+
+  sentiments:
+    type: object
+    properties:
+      meta:
+        $ref:  "#/definitions/meta"
+      isReady:
+        type: boolean
+      sentiments:
+        type: array
+        items:
+          $ref:  "#/definitions/sentiment"
+
+  sentiment:
+    type: object
+    properties:
+      id:
+        type: string
+      rating:
+        type: number
+
+  counts:
+    type: object
+    properties:
+      meta:
+        $ref:  "#/definitions/meta"
+      isReady:
+        type: boolean
+      counts:
+        type: array
+        items:
+          $ref:  "#/definitions/count"
+
+  count:
+    type: object
+    properties:
+      word:
+        type: string
+      count:
+        type: integer
